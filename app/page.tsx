@@ -64,7 +64,7 @@ export default function HomePage() {
               Phase 1 prototype
             </p>
             <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
-              Legal Case Briefer for law students.
+              It'sMeOxy: Legal Case Briefer for law students.
             </h1>
             <p className="max-w-2xl text-lg leading-8 text-slate-700">
               Paste a case URL, click Brief It, and instantly preview a clean, structured legal brief
