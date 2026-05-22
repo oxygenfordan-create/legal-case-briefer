@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { BookOpen, Highlight, Printer, FileText } from 'lucide-react';
+import { BookOpen, Highlighter, Printer, FileText } from 'lucide-react';
 
 type BriefSections = {
   caseName: string;
@@ -169,7 +169,7 @@ export default function HomePage() {
                     onClick={() => setHighlightMode((s) => !s)}
                     className={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm ${highlightMode ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-700'}`}
                   >
-                    <Highlight className="h-4 w-4" />
+                    <Highlighter className="h-4 w-4" />
                     {highlightMode ? 'Highlighting' : 'Highlight Mode'}
                   </button>
                 </div>
