@@ -11,18 +11,6 @@ type CaseBrief = {
   doctrine: string;
 };
 
-const mockCase: CaseBrief = {
-  caseName: 'Smith v. United States',
-  facts:
-    'A federal agent intercepted a package that contained a controlled substance. Smith argued the search violated his Fourth Amendment rights because the package was opened without a warrant. The court reviewed the facts of the seizure and the chain of custody from the delivery service to the federal investigation.',
-  issue:
-    'Whether the warrantless opening of a package by law enforcement after it was stopped in transit violates the Fourth Amendment when the package was in the hands of a third-party carrier.',
-  ruling:
-    'The Supreme Court held that the search was constitutional under the third-party doctrine because the package was voluntarily entrusted to the carrier, and Smith had no reasonable expectation of privacy in the package’s contents once it left his control.',
-  doctrine:
-    'The decision reinforces the third-party doctrine and clarifies that the expectation of privacy in physical packages entrusted to third parties is significantly diminished once those packages are transferred to common carriers.',
-};
-
 const fieldOrder: Array<{ id: keyof CaseBrief; title: string }> = [
   { id: 'caseName', title: 'Name of Case' },
   { id: 'facts', title: 'Facts' },
@@ -35,16 +23,36 @@ export default function HomePage() {
   const [url, setUrl] = useState('https://www.supremecourt.gov/opinions/22pdf/22-1234.pdf');
   const [isLoading, setIsLoading] = useState(false);
   const [brief, setBrief] = useState<CaseBrief | null>(null);
+  const [error, setError] = useState('');
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsLoading(true);
     setBrief(null);
+    setError('');
 
-    window.setTimeout(() => {
-      setBrief(mockCase);
+    try {
+      const response = await fetch('/api/brief', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ url }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        setError(data?.error || 'Unable to generate brief.');
+      } else if (data?.brief) {
+        setBrief(data.brief);
+      } else {
+        setError('Received an unexpected response from the server.');
+      }
+    } catch (err) {
+      setError('Unable to connect to the backend.');
+    } finally {
       setIsLoading(false);
-    }, 750);
+    }
   };
 
   return (
@@ -79,7 +87,8 @@ export default function HomePage() {
             />
             <button
               type="submit"
-              className="inline-flex min-h-[56px] items-center justify-center gap-2 rounded-2xl bg-slate-950 px-6 text-base font-semibold text-white transition hover:bg-slate-800 focus:outline-none focus:ring-4 focus:ring-slate-300"
+              disabled={isLoading}
+              className="inline-flex min-h-[56px] items-center justify-center gap-2 rounded-2xl bg-slate-950 px-6 text-base font-semibold text-white transition hover:bg-slate-800 focus:outline-none focus:ring-4 focus:ring-slate-300 disabled:cursor-not-allowed disabled:opacity-60"
             >
               <Search size={18} />
               Brief It
@@ -114,22 +123,23 @@ export default function HomePage() {
               </div>
               <p className="mt-4 text-slate-600 leading-7">
                 {isLoading
-                  ? 'Mock loader active to show the state before the summary appears.'
+                  ? 'Fetching the case and generating an IRAC-style brief from the backend.'
                   : brief
                   ? 'A polished case brief with facts, issue, ruling, and doctrine is displayed below.'
-                  : 'Paste a case URL and click Brief It to see this layout in action.'}
+                  : 'Paste a case URL and click Brief It to generate a real brief.'}
               </p>
+              {error ? <p className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p> : null}
             </div>
           </div>
 
           <div className="space-y-5">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="text-sm uppercase tracking-[0.24em] text-slate-500">Mock case brief</p>
+                <p className="text-sm uppercase tracking-[0.24em] text-slate-500">Case brief</p>
                 <h3 className="mt-2 text-2xl font-semibold text-slate-950">Structured sections</h3>
               </div>
               <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
-                {brief ? 'Displayed from mock data.' : 'No case loaded yet.'}
+                {brief ? 'Generated from live backend processing.' : 'No case loaded yet.'}
               </div>
             </div>
 
